@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Services\UserService;
+use App\Http\Controllers\ApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\Response;
 
-class UserController extends Controller
+class UserController extends ApiController
 {
     private UserService $userService;
 
@@ -18,7 +18,7 @@ class UserController extends Controller
 
     public function register(Request $request)
     {
-        $data = $request ->only('name', 'cpf_cnpj', 'email', 'password', 'type');
+        $data = $request->only('name', 'cpf_cnpj', 'email', 'password', 'type');
         $validator = Validator::make($data, [
             'name' => 'required|string',
             'email' => 'required|email|unique:users',
@@ -28,14 +28,10 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails())
-            return response()->json(['error' => $validator->messages()], Response::HTTP_BAD_REQUEST);
+            return $this->errorResponse($validator->messages(), 422);
 
         $user = $this->userService->create($data);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Usuario criado com sucesso',
-            'data' => $user
-        ], Response::HTTP_OK);
+        return $this->sucessResponse($user);
     }
 }
