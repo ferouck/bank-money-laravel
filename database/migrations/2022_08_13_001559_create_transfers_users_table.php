@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('payer');
             $table->foreignId('payee');
-            $table->float('value', 10, 2);            
-            $table->enum('status', ['pending', 'fulfilled']);
+            $table->float('value', 10, 2);
+            $table->enum('status', ['pending', 'fulfilled'])->default('pending');
             $table->uuid('transfer_protocol');
 
             $table->foreign('payer')->references('id')->on('users');
