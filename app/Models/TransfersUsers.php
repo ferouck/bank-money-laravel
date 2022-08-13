@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TransfersUsers extends Model
+class TransferUser extends Model
 {
     use HasFactory;
 
