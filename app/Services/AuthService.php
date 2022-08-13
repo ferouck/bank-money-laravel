@@ -15,4 +15,10 @@ class AuthService
     {
         JWTAuth::invalidate($token);
     }
+
+    public function getTokenPayload()
+    {
+        $token = JWTAuth::getToken();
+        return JWTAuth::getPayload($token)->toArray();
+    }
 }
