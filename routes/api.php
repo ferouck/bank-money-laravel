@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\TransferUserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,25 +20,29 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('v1')->group(function() {
+Route::prefix('user')->group(function() {
+    Route::post('/register', [UserController::class, 'register']);
+});
 
-    Route::prefix('user')->group(function() {
-        Route::post('/register', [UserController::class, 'register']);
-    });
-
-    Route::prefix('auth')->group(function() {
-        Route::post('/login', [AuthController::class, 'authenticate']);
-        Route::group(['middleware' => ['jwt.verify']], function() {
-            Route::post('/logout', [AuthController::class, 'logout']);
-        });
-    });
-
+Route::prefix('auth')->group(function() {
+    Route::post('/login', [AuthController::class, 'authenticate']);
     Route::group(['middleware' => ['jwt.verify']], function() {
         Route::post('/logout', [AuthController::class, 'logout']);
+    });
+});
 
 
-        Route::get('teste', function () {
-            return 'api is working';
-        });
+Route::prefix('transfer')->group(function() {
+    Route::group(['middleware' => ['jwt.verify']], function() {
+        Route::post('/make', [TransferUserController::class, 'make']);
+    });
+});
+
+Route::group(['middleware' => ['jwt.verify']], function() {
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+
+    Route::get('teste', function () {
+        return 'api is working';
     });
 });
