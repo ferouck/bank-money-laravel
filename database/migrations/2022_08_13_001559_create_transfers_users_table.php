@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,7 +20,7 @@ return new class extends Migration
             $table->foreignId('payee');
             $table->float('value', 10, 2);
             $table->enum('status', ['pending', 'fulfilled'])->default('pending');
-            $table->uuid('transfer_protocol');
+            $table->uuid('transfer_protocol')->default(DB::raw('(UUID())'));
 
             $table->foreign('payer')->references('id')->on('users');
             $table->foreign('payee')->references('id')->on('users');
