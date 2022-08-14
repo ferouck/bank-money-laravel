@@ -9,7 +9,9 @@ class ExtractUserRepository implements ExtractUserRepositoryInterface
 {
     public function getBalanceUser($userId)
     {
-        return ExtractUser::where('user_id', $userId)->sum('value');
+        return ExtractUser::where('user_id', $userId)
+                ->where('type', '<>', 'reversal')
+                ->sum('value');
     }
 
     public function getTransferByProtocol($transferProtocol)
