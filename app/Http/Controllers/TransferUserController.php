@@ -7,7 +7,6 @@ use App\Services\TransferUserService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\Response;
 
 class TransferUserController extends ApiController
 {
@@ -49,5 +48,7 @@ class TransferUserController extends ApiController
     private function registerTransfer($data)
     {
         $transfer = $this->transferUserService->createTransfer($data, $this->payerInfo->id);
+        if(!$this->transferUserService->authorization())
+            $this->transferUserService->removeTransfer($transfer->id);
     }
 }
