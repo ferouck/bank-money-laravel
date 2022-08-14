@@ -3,19 +3,19 @@
 namespace App\Services;
 
 use App\Interfaces\TransferUserRepositoryInterface as Repository;
-use App\Services\AuthService;
+use App\Services\ExtractUserService;
 use GuzzleHttp;
 
 class TransferUserService
 {
     private Repository $transferRepository;
 
-    private AuthService $authService;
+    private ExtractUserService $extractUserService;
 
-    public function __construct(Repository $transferRepository, AuthService $authService)
+    public function __construct(Repository $transferRepository, ExtractUserService $extractUserService)
     {
         $this->transferRepository = $transferRepository;
-        $this->authService = $authService;
+        $this->extractUserService = $extractUserService;
         $this->authorization_url = env('AUTHORIZATION_URL');
     }
 
@@ -25,17 +25,25 @@ class TransferUserService
         return $this->transferRepository->createTransfer($data);
     }
 
-    public function validUserCanTransfer($userId, $payee, $type)
+    public function validUserCanTransfer($userId, $request, $type)
     {
+        $balance = $this->extractUserService->getBalanceUser($userId);
         $array = array('result' => true, 'message' => '');
-        // Adiciona regra com saldo depois
-        if($type == 'shop')
+
+        if($balance < $request->value){
+            $array['result'] = false;
+            $array['message'] = "The user does not have this balance for the transaction";
+        }
+
+        if($type == 'shop'){
             $array['result'] = false;
             $array['message'] = "Users of type shop can't transfer for another users";
+        }
 
-        if($userId == $payee)
+        if($userId == $request->payee){
             $array['result'] = false;
             $array['message'] = "Unable to transfer to yourself";
+        }
 
         return $array;
     }
