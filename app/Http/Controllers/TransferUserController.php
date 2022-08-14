@@ -19,9 +19,10 @@ class TransferUserController extends ApiController
     {
         $this->transferUserService = $transferUserService;
         $this->userService = $userService;
+        $this->payerInfo = $this->userService->getInfoUserByToken();
     }
 
-    public function make(Request $request)
+    public function initTransfer(Request $request)
     {
         $data = $request->only('payee', 'value');
         $validator = Validator::make($data, [
@@ -30,14 +31,23 @@ class TransferUserController extends ApiController
         ]);
 
         if ($validator->fails())
-            return response()->json(['error' => $validator->messages()], Response::HTTP_BAD_REQUEST);
+            return $this->errorResponse($validator->messages(), 422);
 
-        $payerInfo = $this->userService->getInfoUserByToken();
-        $canTransfer = $this->transferUserService->validUserCanTransfer($payerInfo->id, $request->payee, $payerInfo->type);
-        if (!$canTransfer['result'])
-            return $this->errorResponse($canTransfer['message'], 401);
+        $canTransfer = $this->validTransfer($request);
+        if(!$canTransfer['result'])
+            return $this->errorResponse($canTransfer['message'], 422);
 
+        $transfer = $this->registerTransfer($data);
+    }
 
-        $transfer = $this->transferUserService->createTransfer($data);
+    private function validTransfer($request)
+    {
+        $validated = $this->transferUserService->validUserCanTransfer($this->payerInfo->id, $request->payee, $this->payerInfo->type);
+        return $validated;
+    }
+
+    private function registerTransfer($data)
+    {
+        $transfer = $this->transferUserService->createTransfer($data, $this->payerInfo->id);
     }
 }
