@@ -16,9 +16,6 @@ class TransferUser extends Model
         'payee',
         'value',
         'status',
-    ];
-
-    protected $hidden = [
         'transfer_protocol'
     ];
 }
