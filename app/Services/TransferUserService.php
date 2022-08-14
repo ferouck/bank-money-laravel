@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Interfaces\TransferUserRepositoryInterface as Repository;
 use App\Services\AuthService;
+use GuzzleHttp;
 
 class TransferUserService
 {
@@ -15,6 +16,7 @@ class TransferUserService
     {
         $this->transferRepository = $transferRepository;
         $this->authService = $authService;
+        $this->authorization_url = env('AUTHORIZATION_URL');
     }
 
     public function createTransfer($data, $payerId)
@@ -36,5 +38,24 @@ class TransferUserService
             $array['message'] = "Unable to transfer to yourself";
 
         return $array;
+    }
+
+    public function authorization()
+    {
+        $client = new GuzzleHttp\Client();
+        $url = strval($this->authorization_url);
+        $res = $client->get($url);
+        $data = json_decode($res->getBody());
+
+        if($data->message != 'Autorizado')
+            return false;
+
+        return true;
+    }
+
+    public function removeTransfer($uuId)
+    {
+        // Adicionar log que foi removido
+        $this->transferRepository->deleteTransfer($uuId);
     }
 }
