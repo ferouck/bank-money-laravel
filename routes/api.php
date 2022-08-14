@@ -34,7 +34,7 @@ Route::prefix('auth')->group(function() {
 
 Route::prefix('transfer')->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function() {
-        Route::post('/make', [TransferUserController::class, 'make']);
+        Route::post('/make', [TransferUserController::class, 'initTransfer']);
     });
 });
 
