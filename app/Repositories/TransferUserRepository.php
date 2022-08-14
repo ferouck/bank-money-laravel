@@ -19,9 +19,9 @@ class TransferUserRepository implements TransferUserRepositoryInterface
                 ->get();
     }
 
-    public function deleteTransfer($uuId)
+    public function deleteTransfer($transferId)
     {
-        TransferUser::destroy($uuId);
+        TransferUser::destroy($transferId);
     }
 
     public function createTransfer(array $transferData)
