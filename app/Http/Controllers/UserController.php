@@ -32,6 +32,6 @@ class UserController extends ApiController
 
         $user = $this->userService->create($data);
 
-        return $this->sucessResponse($user);
+        return $this->successResponse($user);
     }
 }
