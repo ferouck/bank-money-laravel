@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\ApiController;
+use App\Jobs\NotificationPayee;
 use App\Services\TransferUserService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class TransferUserController extends ApiController
     {
         $this->transferUserService = $transferUserService;
         $this->userService = $userService;
-        $this->payerInfo = $this->userService->getInfoUserByToken();
+        $this->payeerInfo = $this->userService->getInfoUserByToken();
     }
 
     public function initTransfer(Request $request)
@@ -37,18 +38,42 @@ class TransferUserController extends ApiController
             return $this->errorResponse($canTransfer['message'], 422);
 
         $transfer = $this->registerTransfer($data);
+
+        if(!$transfer)
+            return $this->errorResponse('Transaction denied due to not being authorized, please try again later', 403);
+
+        $this->registerBalanceToPayee($request->payee, $request->value, $transfer->protocol);
+
+        NotificationPayee::dispatch();
+        return $this->successResponse($transfer, 'Transfer made successfully');
     }
 
     private function validTransfer($request)
     {
-        $validated = $this->transferUserService->validUserCanTransfer($this->payerInfo->id, $request->payee, $this->payerInfo->type);
+        $validated = $this->transferUserService->validUserCanTransfer($this->payeerInfo->id, $request, $this->payeerInfo->type);
         return $validated;
     }
 
     private function registerTransfer($data)
     {
-        $transfer = $this->transferUserService->createTransfer($data, $this->payerInfo->id);
-        if(!$this->transferUserService->authorization())
+        $transfer = $this->transferUserService->createTransfer($data, $this->payeerInfo->id);
+        $dataPayeer = $this->transferUserService->makePayeerData($this->payeerInfo->id, $transfer->value, $transfer->transfer_protocol);
+        $extractPayeer = $this->transferUserService->insertBalance($dataPayeer);
+
+        if(!$this->transferUserService->authorization()){
             $this->transferUserService->removeTransfer($transfer->id);
+            $this->transferUserService->reverseBalance($extractPayeer);
+            return false;
+        }
+
+        return $extractPayeer;
+    }
+
+    private function registerBalanceToPayee($userId, $value, $protocol)
+    {
+        $dataPayee = $this->transferUserService->makePayeeData($userId, $value, $protocol);
+        $this->transferUserService->insertBalance($dataPayee);
+        $this->transferUserService->updateStatusTransfer($protocol);
     }
 }
+
