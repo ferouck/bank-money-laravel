@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\TransferUserController;
+use App\Http\Controllers\TransferController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -34,7 +34,7 @@ Route::prefix('auth')->group(function() {
 
 Route::prefix('transfer')->group(function() {
     Route::group(['middleware' => ['jwt.verify']], function() {
-        Route::post('/make', [TransferUserController::class, 'initTransfer']);
+        Route::post('/make', [TransferController::class, 'initTransfer']);
     });
 });
 
