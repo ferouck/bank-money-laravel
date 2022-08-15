@@ -22,7 +22,54 @@ class TransferUserService
     public function createTransfer($data, $payerId)
     {
         $data['payer'] = $payerId;
-        return $this->transferRepository->createTransfer($data);
+        $register =$this->transferRepository->createTransfer($data);
+        return $this->transferRepository->getProtocolTransferById($register->id);
+    }
+
+    public function insertBalance($data)
+    {
+        return $this->extractUserService->createExtract($data);
+    }
+
+    public function reverseBalance($extract)
+    {
+        $data = array(
+            'reference' => $extract->reference,
+            'value' => abs($extract->value),
+            'type' => 'reversal',
+            'protocol' => $extract->protocol
+        );
+
+        $this->extractUserService->updateExtract($extract->id, $data);
+    }
+
+    public function updateStatusTransfer($protocol)
+    {
+        $data = array('status' => 'fulfilled');
+        return $this->transferRepository->updateTransferByProtocol($protocol, $data);
+    }
+
+    public function makePayeerData($userId, $value, $protocol)
+    {
+        //Adiciona nome do usuario que recebeu
+        return array(
+            'user_id' => $userId,
+            'reference' => 'Transferencia para nome',
+            'value' => "-$value",
+            'type' => 'paid',
+            'protocol' => $protocol
+        );
+    }
+
+    public function makePayeeData($userId, $value, $protocol)
+    {
+        return array(
+            'user_id' => $userId,
+            'reference' => 'Transferencia recebida do nome',
+            'value' => $value,
+            'type' => 'recive',
+            'protocol' => $protocol
+        );
     }
 
     public function validUserCanTransfer($userId, $request, $type)
