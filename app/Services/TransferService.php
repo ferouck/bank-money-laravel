@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Interfaces\TransferRepositoryInterface as Repository;
+use App\Services\AuthService;
 use App\Services\ExtractService;
-use GuzzleHttp;
 
 class TransferService
 {
@@ -12,11 +12,13 @@ class TransferService
 
     private ExtractService $extractService;
 
-    public function __construct(Repository $transferRepository, ExtractService $extractService)
+    private AuthService $authService;
+
+    public function __construct(Repository $transferRepository, ExtractService $extractService, AuthService $authService)
     {
         $this->transferRepository = $transferRepository;
         $this->extractService = $extractService;
-        $this->authorization_url = env('AUTHORIZATION_URL');
+        $this->authService = $authService;
     }
 
     public function createTransfer($data, $payerId)
@@ -95,17 +97,9 @@ class TransferService
         return $array;
     }
 
-    public function authorization()
+    public function getAuthorizationForTransfer()
     {
-        $client = new GuzzleHttp\Client();
-        $url = strval($this->authorization_url);
-        $res = $client->get($url);
-        $data = json_decode($res->getBody());
-
-        if($data->message != 'Autorizado')
-            return false;
-
-        return true;
+        return $this->authService->authorization();
     }
 
     public function removeTransfer($uuId)
