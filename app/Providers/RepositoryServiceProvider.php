@@ -7,6 +7,8 @@ use App\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
 use App\Interfaces\TransferUserRepositoryInterface;
 use App\Repositories\TransferUserRepository;
+use App\Interfaces\ExtractUserRepositoryInterface;
+Use App\Repositories\ExtractUserRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(TransferUserRepositoryInterface::class, TransferUserRepository::class);
+        $this->app->bind(ExtractUserRepositoryInterface::class, ExtractUserRepository::class);
     }
 
     /**
