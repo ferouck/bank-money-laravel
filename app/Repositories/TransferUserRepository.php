@@ -12,6 +12,11 @@ class TransferUserRepository implements TransferUserRepositoryInterface
         return TransferUser::findOrFail($uuId);
     }
 
+    public function getProtocolTransferById($id)
+    {
+        return TransferUser::findOrFail($id);
+    }
+
     public function getAllTransferByUserId($userId)
     {
         return TransferUser::where('user_id', $userId)
@@ -29,8 +34,8 @@ class TransferUserRepository implements TransferUserRepositoryInterface
         return TransferUser::create($transferData);
     }
 
-    public function updateTransfer($uuId, array $transferData)
+    public function updateTransferByProtocol($protocol, $data)
     {
-        return TransferUser::whereId($uuId)->update($transferData);
+        return TransferUser::where('transfer_protocol', $protocol)->update($data);
     }
 }
