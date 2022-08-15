@@ -2,7 +2,7 @@
 
 namespace App\Interfaces;
 
-interface ExtractUserRepositoryInterface
+interface ExtractRepositoryInterface
 {
     public function getBalanceUser($userId);
     public function getTransferByProtocol($protocol);

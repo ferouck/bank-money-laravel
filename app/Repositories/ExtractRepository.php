@@ -2,32 +2,32 @@
 
 namespace App\Repositories;
 
-use App\Interfaces\ExtractUserRepositoryInterface;
-use App\Models\ExtractUser;
+use App\Interfaces\ExtractRepositoryInterface;
+use App\Models\Extract;
 
-class ExtractUserRepository implements ExtractUserRepositoryInterface
+class ExtractRepository implements ExtractRepositoryInterface
 {
     public function getBalanceUser($userId)
     {
-        return ExtractUser::where('user_id', $userId)
+        return Extract::where('user_id', $userId)
                 ->where('type', '<>', 'reversal')
                 ->sum('value');
     }
 
     public function getTransferByProtocol($transferProtocol)
     {
-        return ExtractUser::where('protocol', $transferProtocol)
+        return Extract::where('protocol', $transferProtocol)
                 ->orderBy('created_at')
                 ->get();
     }
 
     public function createExtract(array $transferData)
     {
-        return ExtractUser::create($transferData);
+        return Extract::create($transferData);
     }
 
     public function updateExtract($id, array $transferData)
     {
-        return ExtractUser::whereId($id)->update($transferData);
+        return Extract::whereId($id)->update($transferData);
     }
 }

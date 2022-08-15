@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Interfaces\ExtractUserRepositoryInterface as Repository;
+use App\Interfaces\ExtractRepositoryInterface as Repository;
 
-class ExtractUserService
+class ExtractService
 {
     private Repository $extractRepository;
 

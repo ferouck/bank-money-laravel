@@ -3,19 +3,19 @@
 namespace App\Services;
 
 use App\Interfaces\TransferUserRepositoryInterface as Repository;
-use App\Services\ExtractUserService;
+use App\Services\ExtractService;
 use GuzzleHttp;
 
 class TransferUserService
 {
     private Repository $transferRepository;
 
-    private ExtractUserService $extractUserService;
+    private ExtractService $extractService;
 
-    public function __construct(Repository $transferRepository, ExtractUserService $extractUserService)
+    public function __construct(Repository $transferRepository, ExtractService $extractService)
     {
         $this->transferRepository = $transferRepository;
-        $this->extractUserService = $extractUserService;
+        $this->extractService = $extractService;
         $this->authorization_url = env('AUTHORIZATION_URL');
     }
 
@@ -28,7 +28,7 @@ class TransferUserService
 
     public function insertBalance($data)
     {
-        return $this->extractUserService->createExtract($data);
+        return $this->extractService->createExtract($data);
     }
 
     public function reverseBalance($extract)
@@ -40,7 +40,7 @@ class TransferUserService
             'protocol' => $extract->protocol
         );
 
-        $this->extractUserService->updateExtract($extract->id, $data);
+        $this->extractService->updateExtract($extract->id, $data);
     }
 
     public function updateStatusTransfer($protocol)
@@ -74,7 +74,7 @@ class TransferUserService
 
     public function validUserCanTransfer($userId, $request, $type)
     {
-        $balance = $this->extractUserService->getBalanceUser($userId);
+        $balance = $this->extractService->getBalanceUser($userId);
         $array = array('result' => true, 'message' => '');
 
         if($balance < $request->value){
