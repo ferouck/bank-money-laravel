@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use JWTAuth;
+use GuzzleHttp;
 
 class AuthService
 {
@@ -20,5 +21,18 @@ class AuthService
     {
         $token = JWTAuth::getToken();
         return JWTAuth::getPayload($token)->toArray();
+    }
+
+    public function authorization()
+    {
+        $client = new GuzzleHttp\Client();
+        $url = strval($this->authorization_url);
+        $res = $client->get($url);
+        $data = json_decode($res->getBody());
+
+        if($data->message != 'Autorizado')
+            return false;
+
+        return true;
     }
 }
