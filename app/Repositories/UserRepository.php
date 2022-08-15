@@ -17,6 +17,11 @@ class UserRepository implements UserRepositoryInterface
         return User::findOrFail($userId);
     }
 
+    public function getUserNameById($userId)
+    {
+        return User::findOrFail($userId, ['name']);
+    }
+
     public function deleteUser($userId)
     {
         User::destroy($userId);
@@ -25,10 +30,5 @@ class UserRepository implements UserRepositoryInterface
     public function createUser(array $userData)
     {
         return User::create($userData);
-    }
-
-    public function updateUser($userId, array $userData)
-    {
-        return User::whereId($userId)->update($userData);
     }
 }

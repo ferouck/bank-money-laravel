@@ -32,7 +32,7 @@ class TransferService
         $data['payer'] = $this->payeerInfo->id;
         $register = $this->transferRepository->createTransfer($data);
         $transfer = $this->transferRepository->getProtocolTransferById($register->id);
-        $dataPayeer = $this->makePayeerData($transfer->value, $transfer->transfer_protocol);
+        $dataPayeer = $this->makePayeerData($transfer->payee, $transfer->value, $transfer->transfer_protocol);
 
         return $this->insertBalance($dataPayeer);
     }
@@ -86,12 +86,13 @@ class TransferService
         NotificationPayee::dispatch();
     }
 
-    private function makePayeerData($value, $protocol)
+    private function makePayeerData($payeeId, $value, $protocol)
     {
-        //Adiciona nome do usuario que recebeu
+        $user = $this->getUserName($payeeId);
+
         return array(
             'user_id' => $this->payeerInfo->id,
-            'reference' => 'Transferencia para nome',
+            'reference' => "Transfer to $user",
             'value' => "-$value",
             'type' => 'paid',
             'protocol' => $protocol
@@ -100,9 +101,11 @@ class TransferService
 
     private function makePayeeData($userId, $value, $protocol)
     {
+        $user = $this->getUserName($this->payeerInfo->id);
+
         return array(
             'user_id' => $userId,
-            'reference' => 'Transferencia recebida do nome',
+            'reference' => "Transfer from $user",
             'value' => $value,
             'type' => 'recive',
             'protocol' => $protocol
@@ -112,6 +115,11 @@ class TransferService
     private function insertBalance($data)
     {
         return $this->extractService->createExtract($data);
+    }
+
+    private function getUserName($userId)
+    {
+        return $this->userService->getNameUserById($userId);
     }
 
     private function updateStatusTransfer($protocol)

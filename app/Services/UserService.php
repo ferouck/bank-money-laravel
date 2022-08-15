@@ -28,4 +28,10 @@ class UserService
         $data = $this->authService->getTokenPayload();
         return $data['user'];
     }
+
+    public function getNameUserById($userId)
+    {
+        $result = $this->userRepository->getUserNameById($userId);
+        return $result->name;
+    }
 }
