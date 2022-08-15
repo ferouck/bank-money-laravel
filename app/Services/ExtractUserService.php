@@ -22,4 +22,9 @@ class ExtractUserService
     {
         return $this->extractRepository->getBalanceUser($userId);
     }
+
+    public function updateExtract($id, $data)
+    {
+        return $this->extractRepository->updateExtract($id, $data);
+    }
 }
