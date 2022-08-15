@@ -60,7 +60,7 @@ class TransferController extends ApiController
         $dataPayeer = $this->transferService->makePayeerData($this->payeerInfo->id, $transfer->value, $transfer->transfer_protocol);
         $extractPayeer = $this->transferService->insertBalance($dataPayeer);
 
-        if(!$this->transferService->authorization()){
+        if(!$this->transferService->getAuthorizationForTransfer()){
             $this->transferService->removeTransfer($transfer->id);
             $this->transferService->reverseBalance($extractPayeer);
             return false;
