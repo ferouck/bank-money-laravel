@@ -24,9 +24,9 @@ class TransferRepository implements TransferRepositoryInterface
                 ->get();
     }
 
-    public function deleteTransfer($transferId)
+    public function deleteTransferByProtocol($protocol)
     {
-        Transfer::destroy($transferId);
+        Transfer::where('transfer_protocol', $protocol)->delete();
     }
 
     public function createTransfer(array $transferData)
