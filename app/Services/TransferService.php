@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Interfaces\TransferUserRepositoryInterface as Repository;
+use App\Interfaces\TransferRepositoryInterface as Repository;
 use App\Services\ExtractService;
 use GuzzleHttp;
 
-class TransferUserService
+class TransferService
 {
     private Repository $transferRepository;
 

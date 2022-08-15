@@ -2,40 +2,40 @@
 
 namespace App\Repositories;
 
-use App\Interfaces\TransferUserRepositoryInterface;
-use App\Models\TransferUser;
+use App\Interfaces\TransferRepositoryInterface;
+use App\Models\Transfer;
 
-class TransferUserRepository implements TransferUserRepositoryInterface
+class TransferRepository implements TransferRepositoryInterface
 {
     public function getTransferByUuid($uuId)
     {
-        return TransferUser::findOrFail($uuId);
+        return Transfer::findOrFail($uuId);
     }
 
     public function getProtocolTransferById($id)
     {
-        return TransferUser::findOrFail($id);
+        return Transfer::findOrFail($id);
     }
 
     public function getAllTransferByUserId($userId)
     {
-        return TransferUser::where('user_id', $userId)
+        return Transfer::where('user_id', $userId)
                 ->orderBy('created_at')
                 ->get();
     }
 
     public function deleteTransfer($transferId)
     {
-        TransferUser::destroy($transferId);
+        Transfer::destroy($transferId);
     }
 
     public function createTransfer(array $transferData)
     {
-        return TransferUser::create($transferData);
+        return Transfer::create($transferData);
     }
 
     public function updateTransferByProtocol($protocol, $data)
     {
-        return TransferUser::where('transfer_protocol', $protocol)->update($data);
+        return Transfer::where('transfer_protocol', $protocol)->update($data);
     }
 }

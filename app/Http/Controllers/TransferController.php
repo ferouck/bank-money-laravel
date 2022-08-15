@@ -4,20 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\ApiController;
 use App\Jobs\NotificationPayee;
-use App\Services\TransferUserService;
+use App\Services\TransferService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class TransferUserController extends ApiController
+class TransferController extends ApiController
 {
-    private TransferUserService $transferUserService;
+    private TransferService $transferService;
 
     private UserService $userService;
 
-    public function __construct(TransferUserService $transferUserService, UserService $userService)
+    public function __construct(TransferService $transferService, UserService $userService)
     {
-        $this->transferUserService = $transferUserService;
+        $this->transferService = $transferService;
         $this->userService = $userService;
         $this->payeerInfo = $this->userService->getInfoUserByToken();
     }
@@ -50,19 +50,19 @@ class TransferUserController extends ApiController
 
     private function validTransfer($request)
     {
-        $validated = $this->transferUserService->validUserCanTransfer($this->payeerInfo->id, $request, $this->payeerInfo->type);
+        $validated = $this->transferService->validUserCanTransfer($this->payeerInfo->id, $request, $this->payeerInfo->type);
         return $validated;
     }
 
     private function registerTransfer($data)
     {
-        $transfer = $this->transferUserService->createTransfer($data, $this->payeerInfo->id);
-        $dataPayeer = $this->transferUserService->makePayeerData($this->payeerInfo->id, $transfer->value, $transfer->transfer_protocol);
-        $extractPayeer = $this->transferUserService->insertBalance($dataPayeer);
+        $transfer = $this->transferService->createTransfer($data, $this->payeerInfo->id);
+        $dataPayeer = $this->transferService->makePayeerData($this->payeerInfo->id, $transfer->value, $transfer->transfer_protocol);
+        $extractPayeer = $this->transferService->insertBalance($dataPayeer);
 
-        if(!$this->transferUserService->authorization()){
-            $this->transferUserService->removeTransfer($transfer->id);
-            $this->transferUserService->reverseBalance($extractPayeer);
+        if(!$this->transferService->authorization()){
+            $this->transferService->removeTransfer($transfer->id);
+            $this->transferService->reverseBalance($extractPayeer);
             return false;
         }
 
@@ -71,9 +71,9 @@ class TransferUserController extends ApiController
 
     private function registerBalanceToPayee($userId, $value, $protocol)
     {
-        $dataPayee = $this->transferUserService->makePayeeData($userId, $value, $protocol);
-        $this->transferUserService->insertBalance($dataPayee);
-        $this->transferUserService->updateStatusTransfer($protocol);
+        $dataPayee = $this->transferService->makePayeeData($userId, $value, $protocol);
+        $this->transferService->insertBalance($dataPayee);
+        $this->transferService->updateStatusTransfer($protocol);
     }
 }
 

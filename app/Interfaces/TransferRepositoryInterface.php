@@ -2,7 +2,7 @@
 
 namespace App\Interfaces;
 
-interface TransferUserRepositoryInterface
+interface TransferRepositoryInterface
 {
     public function getTransferByUuid($uuId);
     public function getAllTransferByUserId($userId);
