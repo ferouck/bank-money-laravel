@@ -7,6 +7,12 @@ use GuzzleHttp;
 
 class AuthService
 {
+
+    public function __construct()
+    {
+        $this->authorization_url = env('AUTHORIZATION_URL');
+    }
+
     public function auth($credentials)
     {
         return JWTAuth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']]);
