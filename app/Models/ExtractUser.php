@@ -12,12 +12,14 @@ class ExtractUser extends Model
     protected $table = 'extract_users';
 
     protected $fillable = [
+        'user_id',
         'reference',
         'value',
         'type',
+        'protocol'
     ];
 
     protected $hidden = [
-        'transfer_id'
+        'protocol'
     ];
 }
