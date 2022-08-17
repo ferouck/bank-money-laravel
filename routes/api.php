@@ -33,12 +33,3 @@ Route::prefix('transfer')->group(function() {
         Route::post('/make', [TransferController::class, 'initTransfer']);
     });
 });
-
-Route::group(['middleware' => ['jwt.verify']], function() {
-    Route::post('/logout', [AuthController::class, 'logout']);
-
-
-    Route::get('teste', function () {
-        return 'api is working';
-    });
-});
