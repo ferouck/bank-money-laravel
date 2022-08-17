@@ -7,58 +7,155 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+## Sobre o projeto
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+O projeto baseia-se em um API restful, focada na simulação de uma transação entre usuários, contando com método de cadastro, login, autenticação e transferência de saldo entre os mesmos, são utilizados neste sistemas as seguintes linguagens, frameworks e pacotes:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Docker](https://www.docker.com).
+- [Laravel v9](https://laravel.com/docs/9.x).
+- [Laravel Eloquent ORM](https://laravel.com/docs/9.x/eloquent#retrieving-or-creating-models).
+- [Laravel JWT](https://github.com/tymondesigns/jwt-auth).
+- [Laravel Queue](https://laravel.com/docs/9.x/queues).
+- [Laravel Sail](https://laravel.com/docs/9.x/sail).
+- [JWT](https://jwt.io).
+- [MySQL v8](https://www.mysql.com).
+- [PHP v8](https://www.php.net).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+Além destes o aplicativo também contém outras funcionalidades importantes providas pelo framework, como controle de rotas, middlewares e retorno de exceptions.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Estrutura
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+O projeto segue como estrutura alguns conceitos, como o [repository pattern](https://renicius-pagotto.medium.com/entendendo-o-repository-pattern-fcdd0c36b63b), organização de repositórios que realizam a consulta no banco de dados através dos models e também sendo "chamados" pela interface criada para cada repositório.
 
-## Laravel Sponsors
+Exemplo de uma interface, com funções criadas de acordo com a necessidade do projeto, sendo possivel repeti-las a qualquer momento e em qualquer escopo, não gerando repetições de querys, dificil manutenção e outros erros da má utilização de recursos.
+````
+interface TransferRepositoryInterface
+{
+    public function getTransferByUuid($uuId);
+    public function getAllTransferByUserId($userId);
+    public function getProtocolTransferById($id);
+    public function deleteTransferByProtocol($protocol);
+    public function createTransfer(array $transferData);
+    public function updateTransferByProtocol($protocol, array $transferData);
+}
+````
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Além desta é utilizada o service pattern, onde são divididas o controle da requisição, como validação dos campos, retornos de dados e etc no controller, e os services sendo aplicadas as regras de negócios, comunicação com as interfaces, request externas (authorization) e inicio de jobs, dentro de cada service é organizado de maneira que cada função tenha propósitos curtos, objetivos e de fácil execução, seguindo como [design pattern](https://www.opus-software.com.br/design-patterns/) o [SOLID](https://medium.com/desenvolvendo-com-paixao/o-que-é-solid-o-guia-completo-para-você-entender-os-5-princípios-da-poo-2b937b3fc530).
 
-### Premium Partners
+Como no trecho de código abaixo onde está função é utilizada para obter a estrutura de dados que serão inseridos no banco de dados, a própria inserção, atualização da transferência e disparo do job para notificação.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+````
+    public function registerBalanceToPayee($userId, $value, $protocol)
+    {
+        $dataPayee = $this->makePayeeData($userId, $value, $protocol);
+        $this->insertBalance($dataPayee);
+        $this->updateStatusTransfer($protocol);
+        NotificationPayee::dispatch();
+    }
+````
+O projeto contém uma estrutura de [jobs](https://laravel.com/docs/9.x/queues) utilizada para a geração da notificação no momento de conclusão da transação.
 
-## Contributing
+O mesmo possui também [Traits](https://www.treinaweb.com.br/blog/quando-usar-traits-no-php), sendo necessários no tratamento das exception e padronização nos retornos disponiveis pela aplicação.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Exemplificando abaixo, está são as funções utilizadas para retorno em caso de erro ou sucesso de uma request, para evitar as vãs repetições é criado esse arquivo e replicado nos controllers para usar estas mesmas funções. 
 
-## Code of Conduct
+````
+    protected function successResponse($data, $message = null, $code = 200)
+	{
+		return response()->json([
+			'status'=> 'Success',
+			'message' => $message,
+			'data' => $data
+		], $code);
+	}
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+	protected function errorResponse($message = null, $code)
+	{
+		return response()->json([
+			'status'=>'Error',
+			'message' => $message,
+			'data' => null
+		], $code);
+	}
+````
 
-## Security Vulnerabilities
+## Execução
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Para rodar o projeto é bem simples, como o mesmo conta com o uso do docker e também do pacote disponilizado do laravel [sail](https://laravel.com/docs/9.x/sail), há duas maneiras de se executar o mesmo.
 
-## License
+#### Docker
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Na execução através do docker é bem simples uma vez com o [docker instalado](https://docs.docker.com/get-docker/), basta acessar a raiz do projeto e executar os seguintes comandos:
+
+````
+docker-compose build 
+````
+````
+docker-compose up -d
+````
+O primeiro comando irá buildar as imagens necessárias para que o projeto possa rodar, já o segundo irá levantar os containers com essas imagens para que a aplicação se comunique com as mesmas.
+
+#### Sail
+
+Já utilizando o sail é necessário já ter instalado o pacote do projeto [sail](https://github.com/laravel/sail), finalizado a instalação pode-se executar os seguintes comandos:
+
+````
+sail build
+````
+
+````
+sail up -d
+````
+
+Recomenda-se criar um alias para utilizar o comando sail desta maneira.
+
+
+## Rotas
+
+Todas as rotas deste projeto possuem um prefixo antes "api/v1", são estas as rotas disponiveis:
+````
+POST user/register/
+
+POST auth/login/ 
+POST auth/logout/ nessária autenticação
+
+POST transfer/make/ nessária autenticação
+````
+
+## Modelos payload
+
+Cadastro usuário:
+````
+{
+    "name": string,
+    "email": string,
+    "cpf_cnpj": string,
+    "type": string [client, shop],
+    "password": string
+}
+````
+Login:
+````
+{
+    "email": string,
+    "password": string
+}
+````
+Criar transferencia (necessário bearer token):
+````
+{
+    "payee": int,
+    "value": float (ex 10.10)
+}
+````
+
+### Links uteis
+
+- **[Repository Pattern Laravel](https://www.twilio.com/blog/repository-pattern-in-laravel-application)**
+- **[Service Patter Laravel](https://medium.com/levantelab/repository-pattern-contracts-e-service-layer-no-laravel-6-670aa9f50173)**
+- **[Traits PHP](https://www.treinaweb.com.br/blog/quando-usar-traits-no-php)**
+- **[Conceitos Solid](https://medium.com/desenvolvendo-com-paixao/o-que-é-solid-o-guia-completo-para-você-entender-os-5-princípios-da-poo-2b937b3fc530)**
+- **[Retorno de exceptions Laravel API](https://laracasts.com/discuss/channels/code-review/best-way-to-handle-rest-api-errors-throwed-from-controller-or-exception)**
+- **[Laravel Queue](https://laravel.com/docs/9.x/queues)**
+- **[Guzzle Http](https://docs.guzzlephp.org/en/latest/overview.html#requirements)**
